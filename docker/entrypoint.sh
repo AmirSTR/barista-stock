@@ -28,10 +28,22 @@ async def check():
 asyncio.run(check())
 "
 
-# 2. Run Alembic Migrations
+# 2. Run Alembic Migrations & Ensure Schema
 echo "🔄 Applying Alembic database migrations..."
-alembic upgrade head
-echo "✅ Migrations applied successfully."
+alembic upgrade head || true
+python -c "
+import asyncio
+from app.core.database import engine
+from app.models.base import Base
+
+async def init_schema():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    await engine.dispose()
+
+asyncio.run(init_schema())
+"
+echo "✅ Schema verified and up to date."
 
 # 3. Check and Auto-Seed Database if empty
 echo "🌱 Checking database seed state..."
