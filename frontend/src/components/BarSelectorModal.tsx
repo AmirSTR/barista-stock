@@ -1,7 +1,6 @@
 import React from 'react';
-import { Store, Check, X, MapPin } from 'lucide-react';
+import { Store, Check, X, MapPin, Loader2, AlertCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
-import { INITIAL_BARS } from '../services/mockData';
 import { CoffeeBar } from '../types/catalog';
 import { telegram } from '../services/telegram';
 
@@ -11,6 +10,9 @@ export const BarSelectorModal: React.FC = () => {
     setIsBarSelectorOpen,
     selectedBar,
     setSelectedBar,
+    bars,
+    isBarsLoading,
+    barsError,
   } = useCart();
 
   if (!isBarSelectorOpen) return null;
@@ -50,7 +52,21 @@ export const BarSelectorModal: React.FC = () => {
 
         {/* List of Bars */}
         <div className="p-4 space-y-2 max-h-72 overflow-y-auto no-scrollbar">
-          {INITIAL_BARS.map((bar) => {
+          {isBarsLoading && (
+            <div className="flex items-center justify-center gap-2 py-8 text-xs text-slate-400">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Загрузка кофеен...</span>
+            </div>
+          )}
+
+          {!isBarsLoading && barsError && (
+            <div className="flex items-center gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{barsError}</span>
+            </div>
+          )}
+
+          {!isBarsLoading && !barsError && bars.map((bar) => {
             const isSelected = bar.id === selectedBar.id;
             return (
               <button
@@ -76,9 +92,11 @@ export const BarSelectorModal: React.FC = () => {
                     <div className="text-xs font-bold text-slate-100">
                       {bar.name}
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">
-                      {bar.address}
-                    </div>
+                    {bar.address && (
+                      <div className="text-[11px] text-slate-400 mt-0.5">
+                        {bar.address}
+                      </div>
+                    )}
                   </div>
                 </div>
 

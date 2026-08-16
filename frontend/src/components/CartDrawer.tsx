@@ -8,6 +8,7 @@ import {
   Store,
   ArrowRight,
   Loader2,
+  AlertCircle,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { telegram } from '../services/telegram';
@@ -20,6 +21,8 @@ export const CartDrawer: React.FC = () => {
     totalPositionsCount,
     totalQuantity,
     selectedBar,
+    isBarsLoading,
+    barsError,
     setIsBarSelectorOpen,
     decrementItem,
     addItem,
@@ -27,6 +30,7 @@ export const CartDrawer: React.FC = () => {
     clearCart,
     submitOrder,
     isSubmitting,
+    submissionError,
   } = useCart();
 
   // Bind Telegram MainButton and BackButton when cart is open
@@ -43,7 +47,7 @@ export const CartDrawer: React.FC = () => {
             submitOrder();
           },
           isVisible: true,
-          isActive: !isSubmitting,
+          isActive: !isSubmitting && selectedBar.id > 0,
         });
       } else {
         telegram.hideMainButton();
@@ -57,7 +61,7 @@ export const CartDrawer: React.FC = () => {
       telegram.clearMainButtonClick();
       telegram.clearBackButtonClick();
     };
-  }, [isCartOpen, cartItemsList.length, totalPositionsCount, isSubmitting, setIsCartOpen, submitOrder]);
+  }, [isCartOpen, cartItemsList.length, totalPositionsCount, isSubmitting, selectedBar.id, setIsCartOpen, submitOrder]);
 
   if (!isCartOpen) return null;
 
@@ -120,8 +124,11 @@ export const CartDrawer: React.FC = () => {
                   Получатель (Бар)
                 </div>
                 <div className="text-xs font-bold text-slate-200 truncate">
-                  {selectedBar.name}
+                  {isBarsLoading ? 'Загрузка кофеен...' : selectedBar.name}
                 </div>
+                {barsError && (
+                  <div className="text-[10px] text-rose-400 mt-0.5">{barsError}</div>
+                )}
               </div>
             </div>
             <button
@@ -156,27 +163,26 @@ export const CartDrawer: React.FC = () => {
               return (
                 <div
                   key={item.product_id}
-                  className="p-3 rounded-2xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between gap-3 shadow-sm"
+                  className="flex items-center justify-between gap-3 p-3 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-slate-600/80 transition-all"
                 >
-                  {/* Info */}
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-1.5 mb-0.5">
-                      <span className="text-[9px] font-mono font-medium text-slate-400 bg-slate-900/80 px-1.5 py-0.5 rounded">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[9px] font-mono text-slate-400 bg-slate-900/60 px-1.5 py-0.5 rounded">
                         {item.sku}
                       </span>
-                      <span className="text-[11px] text-slate-400">
+                      <span className="text-[10px] text-slate-400">
                         {item.unit}
                       </span>
                     </div>
-                    <div className="text-xs font-bold text-slate-100 truncate">
+                    <h4 className="text-xs font-bold text-slate-100 truncate leading-snug">
                       {item.name}
-                    </div>
+                    </h4>
                     <div className="text-[10px] text-slate-400 mt-0.5">
-                      На складе: {item.available_qty} {item.unit}
+                      Доступно на складе: <b className="text-slate-300">{item.available_qty} {item.unit}</b>
                     </div>
                   </div>
 
-                  {/* Stepper + Delete */}
+                  {/* Actions: Stepper & Remove */}
                   <div className="flex items-center gap-2 shrink-0">
                     <div className="flex items-center bg-slate-900 rounded-xl p-1 border border-slate-700/80">
                       <button
@@ -185,11 +191,9 @@ export const CartDrawer: React.FC = () => {
                       >
                         <Minus className="w-3.5 h-3.5" />
                       </button>
-
-                      <span className="w-8 text-center text-xs font-bold text-white">
+                      <span className="w-7 text-center text-xs font-bold text-white">
                         {item.quantity}
                       </span>
-
                       <button
                         onClick={() =>
                           addItem(
@@ -218,7 +222,8 @@ export const CartDrawer: React.FC = () => {
 
                     <button
                       onClick={() => removeItem(item.product_id)}
-                      className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg active:scale-90 transition-all"
+                      className="p-1.5 text-slate-400 hover:text-rose-400 active:scale-90 transition-all"
+                      title="Удалить"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -229,29 +234,38 @@ export const CartDrawer: React.FC = () => {
           )}
         </div>
 
-        {/* Footer / Checkout Button */}
+        {/* Footer Checkout Action */}
         {cartItemsList.length > 0 && (
           <div className="p-4 bg-slate-950 border-t border-slate-800 shrink-0 space-y-3">
-            <div className="flex items-center justify-between text-xs text-slate-400 px-1">
-              <span>Итоговый объем заявки:</span>
-              <span className="font-bold text-slate-100">
-                {totalQuantity} ед. ({totalPositionsCount} позиций)
+            {submissionError && (
+              <div className="flex items-start gap-2 rounded-xl border border-rose-500/30 bg-rose-500/10 p-3 text-xs text-rose-300">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                <span>{submissionError}</span>
+              </div>
+            )}
+
+            {/* Total Row */}
+            <div className="flex items-center justify-between text-xs text-slate-300">
+              <span className="text-slate-400">Итого позиций к заказу:</span>
+              <span className="font-bold text-white text-sm">
+                {totalPositionsCount} поз. ({totalQuantity} ед.)
               </span>
             </div>
 
+            {/* In-App Checkout Button (Dual-supported for Web and Telegram) */}
             <button
               onClick={() => submitOrder()}
-              disabled={isSubmitting}
-              className="w-full py-3.5 px-4 rounded-2xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold text-sm shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 transition-all"
+              disabled={isSubmitting || selectedBar.id <= 0}
+              className="w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] disabled:opacity-60 text-white font-bold text-sm shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 transition-all"
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Бронирование остатков...</span>
+                  <span>Отправка заказа на склад...</span>
                 </>
               ) : (
                 <>
-                  <span>Отправить заказ на склад</span>
+                  <span>Оформить заказ ({totalPositionsCount} поз.)</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

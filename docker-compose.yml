@@ -1,7 +1,6 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: barista_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
@@ -10,20 +9,16 @@ services:
     volumes:
       - pg_data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-coffee_db}"]
       interval: 5s
       timeout: 5s
-      retries: 5
-    networks:
-      - app_network
+      retries: 10
 
   backend:
     build:
-      context: .
-      dockerfile: docker/Dockerfile.backend
-    container_name: barista_backend
+      context: ./backend
     restart: unless-stopped
     depends_on:
       postgres:
@@ -31,48 +26,48 @@ services:
     env_file:
       - .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-coffee_db}
-      - POSTGRES_SERVER=postgres
+      DEBUG: "false"
+      POSTGRES_SERVER: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-coffee_db}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-coffee_db}
+      TELEGRAM_BOT_TOKEN: ${TELEGRAM_BOT_TOKEN:-${BOT_TOKEN:-}}
+      TELEGRAM_WAREHOUSE_CHAT_ID: ${TELEGRAM_WAREHOUSE_CHAT_ID:-${WAREHOUSE_CHAT_ID:-}}
+      WEBAPP_URL: ${WEBAPP_URL:-${MINI_APP_URL:-http://localhost:8080}}
+      ADMIN_TELEGRAM_IDS: ${ADMIN_TELEGRAM_IDS:-}
+      TELEGRAM_AUTH_REQUIRED: ${TELEGRAM_AUTH_REQUIRED:-false}
+      TELEGRAM_INIT_DATA_TTL_SECONDS: ${TELEGRAM_INIT_DATA_TTL_SECONDS:-86400}
+      API_ADMIN_TOKEN: ${API_ADMIN_TOKEN:-}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-${AI_API_KEY:-}}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OCR_PROVIDER: ${OCR_PROVIDER:-gemini}
+      OCR_MODEL: ${OCR_MODEL:-gemini-2.5-flash}
+      OCR_DEMO_MODE: ${OCR_DEMO_MODE:-false}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8080}
+      AUTO_SEED: ${AUTO_SEED:-true}
+      BOT_ENABLED: ${BOT_ENABLED:-true}
     ports:
       - "8000:8000"
-    volumes:
-      - ./app:/app/app
-      - ./alembic:/app/alembic
-    networks:
-      - app_network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: ../docker/Dockerfile.frontend
-    container_name: barista_frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
+        VITE_ENABLE_MOCKS: ${VITE_ENABLE_MOCKS:-false}
     restart: unless-stopped
-    ports:
-      - "3000:80"
-    networks:
-      - app_network
-
-  nginx-proxy:
-    image: nginx:alpine
-    container_name: barista_nginx_proxy
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
-      - ./docker/certbot/conf:/etc/letsencrypt:ro
-      - ./docker/certbot/www:/var/www/certbot:ro
     depends_on:
-      - backend
-      - frontend
-    networks:
-      - app_network
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"
 
 volumes:
   pg_data:
-    driver: local
-
-networks:
-  app_network:
-    driver: bridge

@@ -5,7 +5,6 @@ import {
   TrendingDown,
   CheckCircle2,
   ArrowRight,
-  RotateCcw,
 } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { telegram } from '../services/telegram';
@@ -13,7 +12,6 @@ import { telegram } from '../services/telegram';
 export const StockAlertModal: React.FC = () => {
   const {
     stockAlert,
-    setStockAlert,
     acceptStockChangesAndProceed,
   } = useCart();
 
@@ -26,12 +24,7 @@ export const StockAlertModal: React.FC = () => {
     acceptStockChangesAndProceed();
   };
 
-  const handleBackToCart = () => {
-    telegram.hapticImpact('light');
-    setStockAlert(null);
-  };
-
-  const confirmedCount = orderResult.items.length;
+  const confirmedCount = orderResult.items.filter((item) => item.confirmed_qty > 0).length;
   const partialCount = partial_items.length;
   const outCount = out_of_stock_items.length;
 
@@ -50,7 +43,7 @@ export const StockAlertModal: React.FC = () => {
             Изменение остатков на складе
           </h3>
           <p className="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
-            Во время формирования заказа складские остатки изменились из-за параллельных отгрузок в сети:
+            Заказ уже создан, а доступные позиции забронированы. Склад скорректировал его по фактическим остаткам:
           </p>
         </div>
 
@@ -142,16 +135,8 @@ export const StockAlertModal: React.FC = () => {
             onClick={handleAccept}
             className="w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] text-white font-bold text-sm shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 transition-all"
           >
-            <span>Принять изменения и продолжить</span>
+            <span>Понятно, заказ создан</span>
             <ArrowRight className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={handleBackToCart}
-            className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold text-xs border border-slate-700/60 flex items-center justify-center gap-1.5 transition-all"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Вернуться в корзину для замены</span>
           </button>
         </div>
       </div>
