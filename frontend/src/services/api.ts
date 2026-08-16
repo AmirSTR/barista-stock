@@ -1,14 +1,21 @@
-import { CatalogResponse } from '../types/catalog';
+import { CatalogResponse, CoffeeBar } from '../types/catalog';
 import { OrderCreateRequest, OrderCreateResultResponse } from '../types/order';
-import { MOCK_CATALOG_DATA } from './mockData';
+import { INITIAL_BARS, MOCK_CATALOG_DATA } from './mockData';
+import { telegram } from './telegram';
 
 const viteEnv = (import.meta as { env?: Record<string, string> }).env;
 const API_BASE = (viteEnv?.VITE_API_URL ? String(viteEnv.VITE_API_URL).replace(/\/+$/, '') : '') + '/api';
+const MOCKS_ENABLED = viteEnv?.VITE_ENABLE_MOCKS === 'true';
 
 export class ApiService {
   private static localCatalogState: CatalogResponse = JSON.parse(
     JSON.stringify(MOCK_CATALOG_DATA)
   );
+
+  private static telegramHeaders(): Record<string, string> {
+    const initData = telegram.getInitData();
+    return initData ? { 'X-Telegram-Init-Data': initData } : {};
+  }
 
   /**
    * Fetch catalog of products grouped by 8 categories.
@@ -19,6 +26,7 @@ export class ApiService {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
+          ...this.telegramHeaders(),
         },
       });
 
@@ -31,8 +39,32 @@ export class ApiService {
       this.localCatalogState = JSON.parse(JSON.stringify(data));
       return data;
     } catch (err) {
-      console.warn('⚠️ Could not connect to live backend API, using client mock state:', err);
-      return JSON.parse(JSON.stringify(this.localCatalogState));
+      if (MOCKS_ENABLED) {
+        console.warn('⚠️ Catalog API unavailable; VITE_ENABLE_MOCKS is enabled:', err);
+        return JSON.parse(JSON.stringify(this.localCatalogState));
+      }
+      throw err;
+    }
+  }
+
+  /** Fetch active coffee bars from the backend instead of relying on demo IDs. */
+  public static async getBars(): Promise<CoffeeBar[]> {
+    try {
+      const response = await fetch(`${API_BASE}/v1/bars/?is_active=true`, {
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`Не удалось загрузить кофейни (HTTP ${response.status})`);
+      }
+
+      return (await response.json()) as CoffeeBar[];
+    } catch (err) {
+      if (MOCKS_ENABLED) {
+        console.warn('⚠️ Bars API unavailable; VITE_ENABLE_MOCKS is enabled:', err);
+        return JSON.parse(JSON.stringify(INITIAL_BARS));
+      }
+      throw err;
     }
   }
 
@@ -48,6 +80,7 @@ export class ApiService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...this.telegramHeaders(),
         },
         body: JSON.stringify(orderPayload),
       });
@@ -60,8 +93,11 @@ export class ApiService {
       const data: OrderCreateResultResponse = await response.json();
       return data;
     } catch (err) {
-      console.warn('⚠️ Order API request failed or backend offline. Running mock order processor:', err);
-      return this.simulateOrderCreation(orderPayload);
+      if (MOCKS_ENABLED) {
+        console.warn('⚠️ Order API unavailable; VITE_ENABLE_MOCKS is enabled:', err);
+        return this.simulateOrderCreation(orderPayload);
+      }
+      throw err;
     }
   }
 

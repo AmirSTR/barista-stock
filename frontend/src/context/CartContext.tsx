@@ -6,7 +6,6 @@ import {
   PartialItemWarning,
   OutOfStockItemWarning,
 } from '../types/order';
-import { INITIAL_BARS } from '../services/mockData';
 import { ApiService } from '../services/api';
 import { telegram } from '../services/telegram';
 
@@ -25,13 +24,16 @@ interface CartContextType {
   setIsCartOpen: (open: boolean) => void;
   selectedBar: CoffeeBar;
   setSelectedBar: (bar: CoffeeBar) => void;
+  bars: CoffeeBar[];
+  isBarsLoading: boolean;
+  barsError: string | null;
   isBarSelectorOpen: boolean;
   setIsBarSelectorOpen: (open: boolean) => void;
   isSubmitting: boolean;
+  submissionError: string | null;
   lastConfirmedOrder: OrderCreateResultResponse | null;
   setLastConfirmedOrder: (order: OrderCreateResultResponse | null) => void;
   stockAlert: StockAlertPayload | null;
-  setStockAlert: (alert: StockAlertPayload | null) => void;
   
   // Actions
   addItem: (product: Product, qty?: number) => void;
@@ -46,25 +48,70 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const UNSELECTED_BAR: CoffeeBar = {
+  id: 0,
+  name: 'Выберите кофейню',
+  is_active: false,
+};
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [cart, setCart] = useState<Record<number, CartItem>>({});
   const [isCartOpen, setIsCartOpen] = useState<boolean>(false);
   const [isBarSelectorOpen, setIsBarSelectorOpen] = useState<boolean>(false);
-  const [selectedBar, setSelectedBar] = useState<CoffeeBar>(INITIAL_BARS[0]);
+  const [bars, setBars] = useState<CoffeeBar[]>([]);
+  const [selectedBar, setSelectedBar] = useState<CoffeeBar>(UNSELECTED_BAR);
+  const [isBarsLoading, setIsBarsLoading] = useState<boolean>(true);
+  const [barsError, setBarsError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [lastConfirmedOrder, setLastConfirmedOrder] = useState<OrderCreateResultResponse | null>(null);
   const [stockAlert, setStockAlert] = useState<StockAlertPayload | null>(null);
 
-  // Sync Telegram user start_param if available to set the bar
+  // Load real backend bars and honor both the bot's ?bar_id=N URL and a
+  // Telegram start_param. The URL parameter is what our bot currently emits.
   useEffect(() => {
-    const startParam = telegram.getStartParam();
-    if (startParam && startParam.startsWith('bar_')) {
-      const barId = parseInt(startParam.replace('bar_', ''), 10);
-      const found = INITIAL_BARS.find((b) => b.id === barId);
-      if (found) {
-        setSelectedBar(found);
+    let active = true;
+
+    const loadBars = async () => {
+      setIsBarsLoading(true);
+      setBarsError(null);
+
+      try {
+        const loadedBars = await ApiService.getBars();
+        if (!active) return;
+
+        setBars(loadedBars);
+        if (loadedBars.length === 0) {
+          setSelectedBar(UNSELECTED_BAR);
+          setBarsError('В системе нет активных кофеен');
+          return;
+        }
+
+        const queryBarId = new URLSearchParams(window.location.search).get('bar_id');
+        const startParam = telegram.getStartParam();
+        const startBarId = startParam?.startsWith('bar_')
+          ? startParam.slice('bar_'.length)
+          : null;
+        const requestedId = Number.parseInt(queryBarId || startBarId || '', 10);
+        const requestedBar = Number.isFinite(requestedId)
+          ? loadedBars.find((bar) => bar.id === requestedId)
+          : undefined;
+
+        setSelectedBar(requestedBar || loadedBars[0]);
+      } catch (err) {
+        if (!active) return;
+        console.error('Failed to load coffee bars:', err);
+        setSelectedBar(UNSELECTED_BAR);
+        setBarsError('Не удалось загрузить список кофеен');
+      } finally {
+        if (active) setIsBarsLoading(false);
       }
-    }
+    };
+
+    loadBars();
+    return () => {
+      active = false;
+    };
   }, []);
 
   const cartItemsList = Object.values(cart);
@@ -174,8 +221,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Submit Order logic
   const submitOrder = useCallback(async (): Promise<boolean> => {
     if (cartItemsList.length === 0 || isSubmitting) return false;
+    if (selectedBar.id <= 0 || !selectedBar.is_active) {
+      setSubmissionError('Сначала выберите активную кофейню');
+      setIsBarSelectorOpen(true);
+      return false;
+    }
 
     setIsSubmitting(true);
+    setSubmissionError(null);
     telegram.setMainButtonLoading(true);
 
     try {
@@ -216,12 +269,17 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return true;
     } catch (err) {
       console.error('Order submission failed:', err);
+      setSubmissionError(
+        err instanceof Error
+          ? err.message
+          : 'Не удалось оформить заказ. Проверьте подключение и повторите попытку.'
+      );
       telegram.hapticNotification('error');
       setIsSubmitting(false);
       telegram.setMainButtonLoading(false);
       return false;
     }
-  }, [cartItemsList, isSubmitting, selectedBar.id]);
+  }, [cartItemsList, isSubmitting, selectedBar.id, selectedBar.is_active]);
 
   // Accept stock changes from alert modal and complete the order
   const acceptStockChangesAndProceed = useCallback(() => {
@@ -248,13 +306,16 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setIsCartOpen,
         selectedBar,
         setSelectedBar,
+        bars,
+        isBarsLoading,
+        barsError,
         isBarSelectorOpen,
         setIsBarSelectorOpen,
         isSubmitting,
+        submissionError,
         lastConfirmedOrder,
         setLastConfirmedOrder,
         stockAlert,
-        setStockAlert,
         addItem,
         decrementItem,
         updateQuantity,

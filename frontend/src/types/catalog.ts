@@ -26,7 +26,7 @@ export interface CatalogResponse {
 export interface CoffeeBar {
   id: number;
   name: string;
-  address: string;
+  address?: string;
   telegram_chat_id?: number;
   is_active: boolean;
 }
