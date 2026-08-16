@@ -2,7 +2,8 @@ import { CatalogResponse } from '../types/catalog';
 import { OrderCreateRequest, OrderCreateResultResponse } from '../types/order';
 import { MOCK_CATALOG_DATA } from './mockData';
 
-const API_BASE = (import.meta.env.VITE_API_URL ? String(import.meta.env.VITE_API_URL).replace(/\/+$/, '') : '') + '/api';
+const viteEnv = (import.meta as { env?: Record<string, string> }).env;
+const API_BASE = (viteEnv?.VITE_API_URL ? String(viteEnv.VITE_API_URL).replace(/\/+$/, '') : '') + '/api';
 
 export class ApiService {
   private static localCatalogState: CatalogResponse = JSON.parse(
