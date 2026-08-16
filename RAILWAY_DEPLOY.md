@@ -1,110 +1,91 @@
-# 🚂 Деплой проекта на Railway (Пошаговое руководство)
+# 🚂 Инструкция по деплою проекта на Railway
 
-Данное руководство описывает развертывание полного стека системы управления запасами кофейни на облачной платформе **[Railway](https://railway.app)**.
-
----
-
-## 🏗 Архитектура деплоя на Railway
-
-В Railway проект может быть запущен в двух вариантах:
-1. **Единый сервис (Monolith Backend + Bot + Static Frontend)**: FastAPI отдает API, бота в фоне и скомпилированный фронтенд.
-2. **Раздельные сервисы (Рекомендуется для высокой нагрузки)**:
-   - **PostgreSQL Database** (Railway Plugin)
-   - **Backend Web Service** (FastAPI API + Bot Polling Worker)
-   - **Frontend Static / Docker Service** (Telegram Mini App)
+Пошаговое руководство по развертыванию полного стека (PostgreSQL 16, FastAPI Backend, Aiogram 3 Telegram Bot и React Vite Mini App) на облачной платформе [Railway](https://railway.app).
 
 ---
 
-## 📋 Шаг 1: Подготовка репозитория
+## 📋 Что будет развернуто
 
-Убедитесь, что все файлы проекта закоммичены в ваш GitHub репозиторий:
-```bash
-git add .
-git commit -m "Deploy to Railway"
-git push origin main
-```
-
----
-
-## 🗄 Шаг 2: Создание проекта и базы данных PostgreSQL
-
-1. Зайдите в панель [Railway Dashboard](https://railway.app/dashboard).
-2. Нажмите **New Project** $\rightarrow$ **Provision PostgreSQL**.
-3. Railway создаст управляемый инстанс PostgreSQL 16.
-4. Перейдите во вкладку **Variables** базы данных и скопируйте `DATABASE_URL`.
+1. **PostgreSQL Plugin** — база данных с автоматическим `DATABASE_URL`.
+2. **Backend Service** (FastAPI + Aiogram Bot Worker):
+   - Автоматический прогон миграций Alembic (`alembic upgrade head`).
+   - Автоматический сидинг каталога товаров (225 позиций) при первом запуске.
+   - Обработка заказов и API эндпоинтов.
+   - Фоновый воркер Telegram-бота.
+   - Модуль оцифровки накладных поставок (Vision LLM + RapidFuzz).
+3. **Frontend Service** (React 18 + Vite + TailwindCSS):
+   - Telegram Mini App (TWA) для бариста.
+   - Автоматический бесплатный HTTPS-домен с SSL-сертификатом для работы внутри Telegram.
 
 ---
 
-## ⚙️ Шаг 3: Развертывание Backend сервиса
+## 🚀 Пошаговый план деплоя
 
-1. В вашем проекте Railway нажмите **New** $\rightarrow$ **GitHub Repo** $\rightarrow$ выберите ваш репозиторий.
-2. Railway автоматически обнаружит `Dockerfile` в [`docker/Dockerfile.backend`](file:///Users/novikov/Documents/AI application bot/docker/Dockerfile.backend) или `railway.toml`.
-3. В настройках сервиса (**Settings**):
-   - **Build**: `Dockerfile Path` $\rightarrow$ `docker/Dockerfile.backend`
-   - **Networking**: Нажмите **Generate Domain** (получите публичный URL, например `https://barista-backend.up.railway.app`).
-4. Во вкладке **Variables** добавьте следующие переменные:
+### Шаг 1: Создание проекта на Railway
+1. Авторизуйтесь на [railway.app](https://railway.app).
+2. Нажмите **«+ New Project»** $\rightarrow$ **«Empty Project»**.
 
-| Переменная | Значение / Описание |
+---
+
+### Шаг 2: Добавление базы данных PostgreSQL
+1. В проекте нажмите **«+ New»** $\rightarrow$ **«Database»** $\rightarrow$ **«Add PostgreSQL»**.
+2. Railway создаст базу данных и автоматически добавит системную переменную `DATABASE_URL`.
+
+---
+
+### Шаг 3: Развертывание Backend-сервиса (API + Бот)
+1. Нажмите **«+ New»** $\rightarrow$ **«GitHub Repo»** $\rightarrow$ выберите ваш репозиторий.
+2. Перейдите во вкладку **Settings** созданного сервиса:
+   - **Service Name**: переименуйте в `backend`.
+   - **Build**: в разделе **Builder** выберите **Dockerfile** и укажите **Dockerfile Path**: `docker/Dockerfile.backend`.
+3. Перейдите во вкладку **Variables** и добавьте следующие переменные:
+
+| Переменная | Значение / Источник |
 |---|---|
-| `DATABASE_URL` | `${{Postgres.DATABASE_URL}}` (Railway подставит автоматически) |
-| `POSTGRES_USER` | `${{Postgres.POSTGRES_USER}}` |
-| `POSTGRES_PASSWORD` | `${{Postgres.POSTGRES_PASSWORD}}` |
-| `POSTGRES_DB` | `${{Postgres.POSTGRES_DB}}` |
-| `POSTGRES_SERVER` | `${{Postgres.POSTGRES_HOST}}` |
-| `POSTGRES_PORT` | `${{Postgres.POSTGRES_PORT}}` |
-| `BOT_TOKEN` | Ваш токен бота от @BotFather (например: `123456:ABC-DEF...`) |
-| `TELEGRAM_BOT_TOKEN` | Тот же токен бота |
-| `WAREHOUSE_CHAT_ID` | Telegram ID склада (например: `-1001234567890`) |
-| `TELEGRAM_WAREHOUSE_CHAT_ID` | Тот же ID склада |
-| `ADMIN_TELEGRAM_IDS` | Telegram ID админов/кладовщиков через запятую (`123456789,987654321`) |
-| `OCR_PROVIDER` | `gemini` (или `openai`) |
-| `OCR_MODEL` | `gemini-2.5-flash` (или `gpt-4o-mini`) |
-| `AI_API_KEY` | Ваш API-ключ Gemini / OpenAI |
-| `GEMINI_API_KEY` | Ваш API-ключ Gemini |
-| `MINI_APP_URL` | Публичный HTTPS URL фронтенда (см. Шаг 4) |
-| `WEBAPP_URL` | Публичный HTTPS URL фронтенда |
+| `DATABASE_URL` | Нажмите **«Add Reference»** $\rightarrow$ выберите `Postgres` $\rightarrow$ `DATABASE_URL` |
+| `BOT_TOKEN` | Токен бота от @BotFather (например `123456789:ABCdef...`) |
+| `WAREHOUSE_CHAT_ID` | Telegram ID чата склада (например `-1001234567890`) |
+| `ADMIN_TELEGRAM_IDS` | Telegram ID администраторов через запятую (например `123456789,987654321`) |
+| `AI_API_KEY` | API ключ Google Gemini (`AIzaSy...`) или OpenAI |
+| `OCR_PROVIDER` | `gemini` |
+| `OCR_MODEL` | `gemini-2.5-flash` |
+| `MINI_APP_URL` | URL фронтенда (настроим на следующем шаге) |
 
-> [!NOTE]
-> При старте контейнера скрипт [`docker/entrypoint.sh`](file:///Users/novikov/Documents/AI application bot/docker/entrypoint.sh) автоматически применит миграции `alembic upgrade head`, проверит наличие товаров в БД и автоматически выполнит сидинг каталога из 225 позиций!
+4. Перейдите во вкладку **Settings** $\rightarrow$ раздел **Networking** $\rightarrow$ нажмите **«Generate Domain»** (вы получите публичный URL вида `https://backend-production-xxxx.up.railway.app`).
 
 ---
 
-## 🎨 Шаг 4: Развертывание Frontend (Telegram Mini App)
+### Шаг 4: Развертывание Frontend-сервиса (Telegram Mini App)
+1. В том же проекте нажмите **«+ New»** $\rightarrow$ **«GitHub Repo»** $\rightarrow$ выберите тот же репозиторий.
+2. Перейдите во вкладку **Settings**:
+   - **Service Name**: переименуйте в `frontend`.
+   - **Dockerfile Path**: укажите `docker/Dockerfile.frontend`.
+3. Перейдите во вкладку **Variables** и добавьте:
 
-1. В том же проекте Railway нажмите **New** $\rightarrow$ **GitHub Repo** $\rightarrow$ выберите тот же репозиторий.
-2. В настройках сервиса (**Settings**):
-   - Измените имя сервиса на `frontend`.
-   - **Build**: `Dockerfile Path` $\rightarrow$ `docker/Dockerfile.frontend`
-   - **Root Directory**: `/`
-3. В **Networking**:
-   - Нажмите **Generate Domain** (получите URL, например `https://barista-app.up.railway.app`).
-4. Во вкладке **Variables** задайте:
-   - `VITE_API_URL`: `https://barista-backend.up.railway.app` (URL бэкенда из Шага 3).
-5. Обновите в бэкенде переменную `MINI_APP_URL` на полученный домен фронтенда (`https://barista-app.up.railway.app`).
+| Переменная | Значение |
+|---|---|
+| `VITE_API_URL` | Публичный URL вашего бэкенда из Шага 3 (например `https://backend-production-xxxx.up.railway.app`) |
 
----
-
-## 🤖 Шаг 5: Настройка Telegram Bot (@BotFather)
-
-1. Откройте диалог с **@BotFather** в Telegram.
-2. Отправьте `/mybots` $\rightarrow$ выберите вашего бота.
-3. **Bot Settings** $\rightarrow$ **Menu Button** $\rightarrow$ **Configure menu button**:
-   - Отправьте URL вашего Frontend сервиса: `https://barista-app.up.railway.app`.
-   - Укажите текст кнопки: `☕ Сделать заказ`.
-4. (Опционально) Настройте описание бота и команды:
-   ```text
-   start - Главное меню и запуск приложения
-   stoplist - Просмотр дефицитных позиций (для бариста)
-   admin_stoplist - Управление стоп-листом (для склада)
-   supply - Приёмка поставки по накладной (для склада)
-   orders - Управление заказами кофеен (для склада)
-   help - Справка по работе с ботом
-   ```
+4. Перейдите в **Settings** $\rightarrow$ **Networking** $\rightarrow$ нажмите **«Generate Domain»** (вы получите публичный HTTPS-домен вида `https://frontend-production-yyyy.up.railway.app`).
 
 ---
 
-## ✅ Проверка работоспособности
+### Шаг 5: Обновление URL в настройках бэкенда и Telegram-бота
+1. В переменной `MINI_APP_URL` бэкенда обновите значение на полученный домен фронтенда (`https://frontend-production-yyyy.up.railway.app`).
+2. В Telegram напишите боту [@BotFather](https://t.me/BotFather):
+   - Отправьте команду `/setmenubutton`.
+   - Выберите вашего бота.
+   - Отправьте HTTPS-ссылку на фронтенд (`https://frontend-production-yyyy.up.railway.app`).
+   - Укажите название кнопки меню: **«🛒 Сделать заказ»**.
 
-1. Откройте `https://barista-backend.up.railway.app/docs` — откроется интерактивный Swagger UI.
-2. Откройте бота в Telegram и отправьте команду `/start` — появится приветствие и кнопка WebApp.
-3. Нажмите кнопку WebApp или перейдите по ссылке `https://barista-app.up.railway.app` — загрузится интерактивный каталог кофе, сиропов, молока и хозтоваров.
+---
+
+## 🔍 Проверка работоспособности
+
+1. **Проверка API Health**:
+   - Откройте в браузере: `https://<ваш-бэкенд>/health` $\rightarrow$ ответ `{"status":"healthy"}`.
+   - Swagger документация: `https://<ваш-бэкенд>/docs`.
+2. **Проверка Telegram-бота**:
+   - Отправьте `/start` боту в Telegram $\rightarrow$ бот предложит выбрать кофейню или сразу откроет меню Mini App.
+3. **Проверка приёмки накладных (OCR)**:
+   - Администратор (чей ID указан в `ADMIN_TELEGRAM_IDS`) отправляет боту фотографию накладной $\rightarrow$ бот распознает товары, создаст черновик и прикрепит кнопку `[ ✅ Зачислить на склад ]`.
