@@ -1,0 +1,83 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --tg-theme-bg-color: #0f172a;
+    --tg-theme-secondary-bg-color: #1e293b;
+    --tg-theme-text-color: #f8fafc;
+    --tg-theme-hint-color: #94a3b8;
+    --tg-theme-link-color: #38bdf8;
+    --tg-theme-button-color: #0284c7;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-header-bg-color: #0f172a;
+    --tg-theme-accent-text-color: #38bdf8;
+    --tg-theme-section-bg-color: #1e293b;
+    --tg-theme-section-header-text-color: #64748b;
+    --tg-theme-subtitle-text-color: #94a3b8;
+    --tg-theme-destructive-text-color: #ef4444;
+  }
+
+  /* When Telegram provides light theme */
+  .tg-theme-light {
+    --tg-theme-bg-color: #ffffff;
+    --tg-theme-secondary-bg-color: #f1f5f9;
+    --tg-theme-text-color: #0f172a;
+    --tg-theme-hint-color: #64748b;
+    --tg-theme-link-color: #0284c7;
+    --tg-theme-button-color: #0284c7;
+    --tg-theme-button-text-color: #ffffff;
+    --tg-theme-header-bg-color: #ffffff;
+    --tg-theme-accent-text-color: #0284c7;
+    --tg-theme-section-bg-color: #f8fafc;
+    --tg-theme-section-header-text-color: #64748b;
+    --tg-theme-subtitle-text-color: #64748b;
+    --tg-theme-destructive-text-color: #dc2626;
+  }
+
+  body {
+    background-color: var(--tg-theme-bg-color);
+    color: var(--tg-theme-text-color);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+}
+
+/* Glassmorphism and touch utilities */
+.glass-panel {
+  background: rgba(30, 41, 59, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-panel-light {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.tap-active:active {
+  transform: scale(0.96);
+  transition: transform 0.1s ease;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
