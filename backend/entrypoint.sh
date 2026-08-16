@@ -31,12 +31,17 @@ async def check():
 asyncio.run(check())
 "
 
-# 2. Run Alembic migrations. A broken migration must fail the deployment.
+# 2. Adopt only a fully compatible schema left by pre-Alembic deployments.
+# Partial or incompatible schemas fail closed; this never drops application data.
+echo "🔎 Checking for a compatible legacy database schema..."
+python -m app.db.adopt_legacy_schema
+
+# 3. Run Alembic migrations. A broken migration must fail the deployment.
 echo "🔄 Applying Alembic database migrations..."
 alembic upgrade head
 echo "✅ Schema verified and up to date."
 
-# 3. Seed only a brand-new catalog, using the non-destructive seed helper.
+# 4. Seed only a brand-new catalog, using the non-destructive seed helper.
 if [ "${AUTO_SEED:-true}" = "true" ]; then
   echo "🌱 Checking database seed state..."
   python -c "
@@ -57,7 +62,7 @@ else
   echo "ℹ️ AUTO_SEED is disabled; skipping initial catalog seed."
 fi
 
-# 4. Graceful termination handler
+# 5. Graceful termination handler
 cleanup() {
     echo "🛑 Received termination signal. Gracefully shutting down worker processes..."
     if [ -n "${BOT_PID:-}" ]; then
@@ -72,14 +77,14 @@ cleanup() {
 
 trap 'cleanup; exit 0' SIGTERM SIGINT
 
-# 5. Start FastAPI server
+# 6. Start FastAPI server
 PORT="${PORT:-8000}"
 WEB_CONCURRENCY="${WEB_CONCURRENCY:-1}"
 echo "🌐 Starting FastAPI HTTP server on port $PORT..."
 uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --workers "$WEB_CONCURRENCY" &
 UVICORN_PID=$!
 
-# 6. Start Telegram Bot Runner (if token is configured)
+# 7. Start Telegram Bot Runner (if token is configured)
 BOT_TOKEN_VALUE="${TELEGRAM_BOT_TOKEN:-$BOT_TOKEN}"
 if [ -n "$BOT_TOKEN_VALUE" ] && [ "${BOT_ENABLED:-true}" = "true" ]; then
     echo "🤖 Starting Telegram Bot polling runner..."
@@ -89,7 +94,7 @@ else
     echo "ℹ️ Telegram bot worker is disabled or no token is configured."
 fi
 
-# 7. If either critical process exits, stop the container so Railway can
+# 8. If either critical process exits, stop the container so Railway can
 # restart it instead of reporting a healthy API while the bot is dead.
 if [ -n "${BOT_PID:-}" ]; then
     set +e
