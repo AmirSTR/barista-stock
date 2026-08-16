@@ -121,3 +121,10 @@ async def test_supply_invoice_and_items(db_session: AsyncSession):
     assert len(invoice.items) == 1
     assert invoice.items[0].detected_name == "Молоко 3.2% 1л пастеризованное"
     assert invoice.items[0].confidence_score == 0.96
+
+
+@pytest.mark.asyncio
+async def test_ensure_schema_execution(db_session: AsyncSession):
+    from app.db.ensure_schema import ensure_schema
+    # Should execute without errors on active engine
+    await ensure_schema(db_session.bind)

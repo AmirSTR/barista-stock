@@ -12,6 +12,7 @@ from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.database import async_session_maker, engine
+from app.db.ensure_schema import ensure_schema
 from app.db.seed_data import PRODUCTS_DATA, SAMPLE_BARS
 from app.models import (
     Bar,
@@ -50,11 +51,9 @@ async def seed_database(
         close_session_at_end = True
 
     try:
-        # Ensure all tables exist (in case migrations were skipped or database was partially created)
+        # Ensure all tables and required columns exist
         target_engine = session.bind if (session is not None and session.bind is not None) else engine
-        async with target_engine.begin() as conn:
-            from app.models.base import Base
-            await conn.run_sync(Base.metadata.create_all)
+        await ensure_schema(target_engine)
 
         await clear_database(session)
 

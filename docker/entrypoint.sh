@@ -34,11 +34,10 @@ alembic upgrade head || true
 python -c "
 import asyncio
 from app.core.database import engine
-from app.models.base import Base
+from app.db.ensure_schema import ensure_schema
 
 async def init_schema():
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await ensure_schema(engine)
     await engine.dispose()
 
 asyncio.run(init_schema())
