@@ -13,3 +13,4 @@ aiohttp==3.12.15
 rapidfuzz==3.13.0
 sqladmin==0.20.1
 itsdangerous==2.2.0
+openpyxl==3.1.2

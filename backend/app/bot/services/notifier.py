@@ -1,6 +1,9 @@
 import logging
 from typing import Any, List, Optional
+import io
+import openpyxl
 from aiogram import Bot
+from aiogram.types import BufferedInputFile
 
 from app.bot.config import bot_settings
 from app.bot.keyboards.warehouse import get_order_warehouse_keyboard
@@ -18,6 +21,48 @@ def _format_qty(qty: Optional[float]) -> str:
         return str(int(val))
     return f"{val:.2f}".rstrip("0").rstrip(".")
 
+def generate_excel_order(order_id: int, bar_name: str, items: List[Any]) -> BufferedInputFile:
+    wb = openpyxl.Workbook()
+    ws = wb.active
+    ws.title = f"Заказ {order_id}"
+    
+    ws.append(["Название товара", "Количество"])
+    ws.column_dimensions['A'].width = 40
+    ws.column_dimensions['B'].width = 15
+    
+    for item in items:
+        if isinstance(item, dict):
+            name = item.get("name") or item.get("product_name") or "Товар"
+            qty = item.get("confirmed_qty")
+            if qty is None:
+                qty = item.get("requested_qty", 0)
+        else:
+            name = getattr(item, "name", None)
+            if not name and hasattr(item, "product") and item.product:
+                name = item.product.name
+            name = name or "Товар"
+            qty = getattr(item, "confirmed_qty", None)
+            if qty is None:
+                qty = getattr(item, "requested_qty", 0)
+
+        if qty is not None and float(qty) > 0:
+            ws.append([name, _format_qty(qty)])
+            
+    out = io.BytesIO()
+    wb.save(out)
+    out.seek(0)
+    
+    clean_name = bar_name.strip()
+    if clean_name.startswith("Кофейня"):
+        clean_name = clean_name[len("Кофейня"):].strip()
+    clean_name = clean_name.strip("«»\"' ")
+    if not clean_name:
+        clean_name = bar_name
+    
+    filename = f"Заказ_{order_id}_{clean_name}.xlsx".replace(" ", "_")
+    return BufferedInputFile(out.read(), filename=filename)
+
+
 
 def format_order_message(
     order_id: int,
@@ -27,6 +72,7 @@ def format_order_message(
     status: OrderStatus = OrderStatus.PENDING,
     packer_name: Optional[str] = None,
     shipped_by: Optional[str] = None,
+    include_items: bool = False,
 ) -> str:
     """Format warehouse notification message according to specification.
 
@@ -70,36 +116,37 @@ def format_order_message(
         ]
 
     # Confirmed/active items list
-    confirmed_lines: List[str] = []
-    for item in items:
-        # Support both object attributes and dict keys
-        if isinstance(item, dict):
-            name = item.get("name") or item.get("product_name") or "Товар"
-            qty = item.get("confirmed_qty")
-            if qty is None:
-                qty = item.get("requested_qty", 0)
-            unit = item.get("unit") or "шт."
+    if include_items:
+        confirmed_lines: List[str] = []
+        for item in items:
+            # Support both object attributes and dict keys
+            if isinstance(item, dict):
+                name = item.get("name") or item.get("product_name") or "Товар"
+                qty = item.get("confirmed_qty")
+                if qty is None:
+                    qty = item.get("requested_qty", 0)
+                unit = item.get("unit") or "шт."
+            else:
+                name = getattr(item, "name", None)
+                if not name and hasattr(item, "product") and item.product:
+                    name = item.product.name
+                name = name or "Товар"
+                qty = getattr(item, "confirmed_qty", None)
+                if qty is None:
+                    qty = getattr(item, "requested_qty", 0)
+                unit = getattr(item, "unit", None)
+                if not unit and hasattr(item, "product") and item.product:
+                    unit = item.product.unit
+                unit = unit or "шт."
+    
+            # Only list in main section if confirmed_qty > 0 or not marked as 0
+            if qty is not None and float(qty) > 0:
+                confirmed_lines.append(f"• {name} — {_format_qty(qty)} {unit}")
+    
+        if confirmed_lines:
+            lines.extend(confirmed_lines)
         else:
-            name = getattr(item, "name", None)
-            if not name and hasattr(item, "product") and item.product:
-                name = item.product.name
-            name = name or "Товар"
-            qty = getattr(item, "confirmed_qty", None)
-            if qty is None:
-                qty = getattr(item, "requested_qty", 0)
-            unit = getattr(item, "unit", None)
-            if not unit and hasattr(item, "product") and item.product:
-                unit = item.product.unit
-            unit = unit or "шт."
-
-        # Only list in main section if confirmed_qty > 0 or not marked as 0
-        if qty is not None and float(qty) > 0:
-            confirmed_lines.append(f"• {name} — {_format_qty(qty)} {unit}")
-
-    if confirmed_lines:
-        lines.extend(confirmed_lines)
-    else:
-        lines.append("• (Нет подтвержденных позиций)")
+            lines.append("• (Нет подтвержденных позиций)")
 
     # Out-of-stock items list
     oos_lines: List[str] = []
@@ -187,12 +234,16 @@ async def send_order_to_warehouse(
             items=items,
             out_of_stock_items=out_of_stock_items,
             status=OrderStatus.PENDING,
+            include_items=False,
         )
         keyboard = get_order_warehouse_keyboard(order_id, status=OrderStatus.PENDING)
 
-        msg = await bot.send_message(
+        document = generate_excel_order(order_id, bar_name, items)
+        
+        msg = await bot.send_document(
             chat_id=target_chat_id,
-            text=text,
+            document=document,
+            caption=text,
             reply_markup=keyboard,
         )
         return msg

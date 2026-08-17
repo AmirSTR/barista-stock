@@ -52,12 +52,15 @@ def _create_mock_message(user_id: int = 12345, text: str = "/start") -> Message:
     return msg
 
 
-def _create_mock_callback(user_id: int = 12345, data: str = "") -> CallbackQuery:
+def _create_mock_callback(user_id: int = 12345, data: str = "") -> MagicMock:
     cb = MagicMock(spec=CallbackQuery)
     cb.id = "cb_123"
-    cb.from_user = _create_mock_user(user_id=user_id)
     cb.data = data
-    cb.message = _create_mock_message(user_id=user_id)
+    cb.from_user = _create_mock_user(user_id=user_id)
+    cb.message = MagicMock(spec=Message)
+    cb.message.document = None
+    cb.message.edit_text = AsyncMock()
+    cb.message.edit_caption = AsyncMock()
     cb.answer = AsyncMock()
     return cb
 
@@ -116,6 +119,7 @@ async def test_format_order_message_all_sections():
         items=items,
         out_of_stock_items=out_of_stock,
         status=OrderStatus.PENDING,
+        include_items=True,
     )
 
     assert "📦 Новый заказ #1042 — Кофейня «Центр»" in msg
@@ -134,6 +138,7 @@ async def test_format_order_message_all_sections():
         out_of_stock_items=out_of_stock,
         status=OrderStatus.PACKING,
         packer_name="Иван Иванов (@ivan)",
+        include_items=True,
     )
     assert "👨‍🍳 В сборке: Иван Иванов (@ivan)" in msg_pack
 
@@ -144,6 +149,7 @@ async def test_format_order_message_all_sections():
         items=items,
         status=OrderStatus.SHIPPED,
         shipped_by="Иван Иванов (@ivan)",
+        include_items=True,
     )
     assert "✅ Заказ #1042 отгружен" in msg_ship
     assert "Кофейня: «Центр»" in msg_ship
@@ -391,6 +397,7 @@ async def test_send_order_to_warehouse_mock_bot():
     """Test send_order_to_warehouse with mock Bot instance."""
     bot = MagicMock()
     bot.send_message = AsyncMock()
+    bot.send_document = AsyncMock()
 
     with patch("app.bot.services.notifier.bot_settings") as mock_settings:
         mock_settings.TOKEN = "test_token"
@@ -405,13 +412,12 @@ async def test_send_order_to_warehouse_mock_bot():
             chat_id=-100999,
         )
 
-        bot.send_message.assert_called_once()
-        call_kwargs = bot.send_message.call_args[1]
+        bot.send_document.assert_called_once()
+        call_kwargs = bot.send_document.call_args[1]
         assert call_kwargs["chat_id"] == -100999
-        assert "📦 Новый заказ #555 — Кофейня «Центр»" in call_kwargs["text"]
-        assert "• Стакан 0,3 — 50 шт." in call_kwargs["text"]
-        assert "⚠️ В стопе (не вошло):" in call_kwargs["text"]
-        assert "• Сахар в стиках — 0 шт." in call_kwargs["text"]
+        assert "📦 Новый заказ #555 — Кофейня «Центр»" in call_kwargs["caption"]
+        assert "⚠️ В стопе (не вошло):" in call_kwargs["caption"]
+        assert "• Сахар в стиках — 0 шт." in call_kwargs["caption"]
 
 
 @pytest.mark.asyncio

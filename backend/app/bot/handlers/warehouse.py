@@ -88,10 +88,16 @@ async def pack_order_callback(
         await callback.answer(f"Заказ #{order_id} взят в сборку!")
 
         if callback.message:
-            await callback.message.edit_text(
-                text=new_text,
-                reply_markup=new_keyboard,
-            )
+            if callback.message.document:
+                await callback.message.edit_caption(
+                    caption=new_text,
+                    reply_markup=new_keyboard,
+                )
+            else:
+                await callback.message.edit_text(
+                    text=new_text,
+                    reply_markup=new_keyboard,
+                )
 
 
 @warehouse_router.callback_query(F.data.startswith("warehouse:ship:"))
@@ -140,7 +146,13 @@ async def ship_order_callback(
         await callback.answer(f"✅ Заказ #{order_id} успешно отгружен!")
 
         if callback.message:
-            await callback.message.edit_text(
-                text=new_text,
-                reply_markup=None,
-            )
+            if callback.message.document:
+                await callback.message.edit_caption(
+                    caption=new_text,
+                    reply_markup=None,
+                )
+            else:
+                await callback.message.edit_text(
+                    text=new_text,
+                    reply_markup=None,
+                )
