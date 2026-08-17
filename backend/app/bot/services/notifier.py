@@ -2,6 +2,8 @@ import logging
 from typing import Any, List, Optional
 import io
 import openpyxl
+from openpyxl.styles import PatternFill, Font, Alignment, Border, Side
+from datetime import datetime
 from aiogram import Bot
 from aiogram.types import BufferedInputFile
 
@@ -26,16 +28,55 @@ def generate_excel_order(order_id: int, bar_name: str, items: List[Any]) -> Buff
     ws = wb.active
     ws.title = f"Заказ {order_id}"
     
-    ws.append(["Название товара", "Количество"])
-    ws.column_dimensions['A'].width = 40
-    ws.column_dimensions['B'].width = 15
+    clean_name = bar_name.strip()
+    if clean_name.startswith("Кофейня"):
+        clean_name = clean_name[len("Кофейня"):].strip()
+    clean_name = clean_name.strip("«»\"' ")
+    if not clean_name:
+        clean_name = bar_name
+
+    cyan_fill = PatternFill(start_color="00FFFF", end_color="00FFFF", fill_type="solid")
+    peach_fill = PatternFill(start_color="FCE4D6", end_color="FCE4D6", fill_type="solid")
+    thin_border = Border(
+        left=Side(style='thin'), 
+        right=Side(style='thin'), 
+        top=Side(style='thin'), 
+        bottom=Side(style='thin')
+    )
+    center_align = Alignment(horizontal="center", vertical="center")
+
+    now = datetime.now()
+    current_date = f"{now.day}.{now.month}"
     
+    ws.append(["Дата отправки", current_date, "", ""])
+    for col in range(1, 5):
+        cell = ws.cell(row=1, column=col)
+        cell.fill = cyan_fill
+        cell.border = thin_border
+        cell.alignment = center_align
+        cell.font = Font(size=12)
+
+    ws.append(["Кофе бар", clean_name, "Склад", "Бар"])
+    for col in range(1, 5):
+        cell = ws.cell(row=2, column=col)
+        cell.fill = peach_fill
+        cell.border = thin_border
+        cell.alignment = center_align
+        cell.font = Font(size=12)
+
+    ws.column_dimensions['A'].width = 30
+    ws.column_dimensions['B'].width = 20
+    ws.column_dimensions['C'].width = 20
+    ws.column_dimensions['D'].width = 20
+    
+    row_idx = 3
     for item in items:
         if isinstance(item, dict):
             name = item.get("name") or item.get("product_name") or "Товар"
             qty = item.get("confirmed_qty")
             if qty is None:
                 qty = item.get("requested_qty", 0)
+            unit = item.get("unit") or ""
         else:
             name = getattr(item, "name", None)
             if not name and hasattr(item, "product") and item.product:
@@ -44,20 +85,26 @@ def generate_excel_order(order_id: int, bar_name: str, items: List[Any]) -> Buff
             qty = getattr(item, "confirmed_qty", None)
             if qty is None:
                 qty = getattr(item, "requested_qty", 0)
+            unit = getattr(item, "unit", None)
+            if not unit and hasattr(item, "product") and item.product:
+                unit = item.product.unit
+            unit = unit or ""
 
         if qty is not None and float(qty) > 0:
-            ws.append([name, _format_qty(qty)])
+            qty_str = _format_qty(qty)
+            if unit:
+                qty_str += f" {unit}"
+            ws.append([name, qty_str, "", ""])
+            for col in range(1, 5):
+                cell = ws.cell(row=row_idx, column=col)
+                cell.border = thin_border
+                cell.alignment = center_align
+                cell.font = Font(size=12)
+            row_idx += 1
             
     out = io.BytesIO()
     wb.save(out)
     out.seek(0)
-    
-    clean_name = bar_name.strip()
-    if clean_name.startswith("Кофейня"):
-        clean_name = clean_name[len("Кофейня"):].strip()
-    clean_name = clean_name.strip("«»\"' ")
-    if not clean_name:
-        clean_name = bar_name
     
     filename = f"Заказ_{order_id}_{clean_name}.xlsx".replace(" ", "_")
     return BufferedInputFile(out.read(), filename=filename)
