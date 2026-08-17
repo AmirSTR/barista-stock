@@ -27,7 +27,7 @@ app = FastAPI(
 # SQLAdmin integration
 from sqladmin import Admin
 from app.admin import ProductAdmin, BarAdmin, StockAdmin, OrderAdmin, OrderItemAdmin, SupplyInvoiceAdmin, SupplyItemAdmin
-admin = Admin(app, engine, title="Barista Stock Admin")
+admin = Admin(app, engine, title="Barista Stock Admin", templates_dir="app/templates")
 admin.add_view(ProductAdmin)
 admin.add_view(BarAdmin)
 admin.add_view(StockAdmin)

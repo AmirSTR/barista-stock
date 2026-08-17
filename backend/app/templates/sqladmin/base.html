@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/tabler.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/tabler-icons.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/fontawesome.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/select2.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/flatpickr.min.css') }}">
+  <link rel="stylesheet" href="{{ url_for('admin:statics', path='css/main.css') }}">
+  {% if admin.favicon_url %}
+  <link rel="icon" href="{{ admin.favicon_url }}">
+  {% endif %}
+  <style>
+    /* Premium Dark Theme Overrides for Tabler */
+    :root {
+      --tblr-font-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      --tblr-border-radius: 12px;
+      --tblr-primary: #8b5cf6;
+      --tblr-primary-rgb: 139, 92, 246;
+    }
+    
+    body {
+      background-color: #0f172a !important;
+      color: #cbd5e1 !important;
+      font-family: var(--tblr-font-sans-serif) !important;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .navbar-vertical {
+      background: #1e293b !important;
+      border-right: 1px solid #334155 !important;
+    }
+    
+    .navbar-dark .navbar-brand {
+      color: #f8fafc !important;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+
+    .nav-link {
+      color: #94a3b8 !important;
+      font-weight: 500;
+      border-radius: 8px !important;
+      margin: 4px 12px !important;
+      transition: all 0.2s ease !important;
+    }
+    
+    .nav-link:hover {
+      background: #334155 !important;
+      color: #f8fafc !important;
+    }
+
+    .nav-item.active .nav-link {
+      background: rgba(139, 92, 246, 0.15) !important;
+      color: #c4b5fd !important;
+    }
+
+    .page-header {
+      margin-bottom: 2rem !important;
+    }
+
+    .page-title {
+      font-weight: 700 !important;
+      color: #f8fafc !important;
+      letter-spacing: -0.5px !important;
+    }
+
+    .card {
+      background: #1e293b !important;
+      border: 1px solid #334155 !important;
+      border-radius: var(--tblr-border-radius) !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+    }
+    
+    .card-header {
+      background: transparent !important;
+      border-bottom: 1px solid #334155 !important;
+      padding: 1.25rem 1.5rem !important;
+    }
+
+    .table {
+      color: #cbd5e1 !important;
+    }
+    
+    .table th {
+      background: #1e293b !important;
+      color: #94a3b8 !important;
+      font-weight: 600 !important;
+      text-transform: uppercase !important;
+      font-size: 0.75rem !important;
+      letter-spacing: 0.05em !important;
+      border-bottom: 1px solid #334155 !important;
+    }
+    
+    .table td {
+      border-bottom: 1px solid #334155 !important;
+      vertical-align: middle !important;
+    }
+
+    .table-responsive {
+      border-radius: 0 0 var(--tblr-border-radius) var(--tblr-border-radius) !important;
+    }
+    
+    .table tbody tr:hover td {
+      background-color: rgba(255, 255, 255, 0.02) !important;
+    }
+
+    .btn-primary {
+      background: var(--tblr-primary) !important;
+      border: none !important;
+      font-weight: 600 !important;
+      box-shadow: 0 4px 6px -1px rgba(139, 92, 246, 0.2) !important;
+    }
+    
+    .btn-primary:hover {
+      background: #7c3aed !important;
+      transform: translateY(-1px) !important;
+    }
+
+    .form-control, .form-select {
+      background-color: #0f172a !important;
+      border: 1px solid #334155 !important;
+      color: #f8fafc !important;
+      border-radius: 8px !important;
+    }
+
+    .form-control:focus, .form-select:focus {
+      background-color: #0f172a !important;
+      border-color: var(--tblr-primary) !important;
+      box-shadow: 0 0 0 0.25rem rgba(139, 92, 246, 0.25) !important;
+      color: #f8fafc !important;
+    }
+
+    .pagination .page-link {
+      background-color: #1e293b !important;
+      border-color: #334155 !important;
+      color: #cbd5e1 !important;
+    }
+
+    .pagination .page-item.active .page-link {
+      background-color: var(--tblr-primary) !important;
+      border-color: var(--tblr-primary) !important;
+      color: #fff !important;
+    }
+    
+    .text-muted {
+      color: #94a3b8 !important;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0f172a; 
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155; 
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569; 
+    }
+  </style>
+  {% block head %}
+  {% endblock %}
+  <title>{{ admin.title }}</title>
+</head>
+
+<body data-bs-theme="dark">
+  {% block body %}
+  <main>
+    {% block main %}
+    {% endblock %}
+  </main>
+  {% endblock %}
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/jquery.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/tabler.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/popper.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/bootstrap.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/select2.full.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/flatpickr.min.js') }}"></script>
+  <script type="text/javascript" src="{{ url_for('admin:statics', path='js/main.js') }}"></script>
+  {% block tail %}
+  {% endblock %}
+</body>
+
+</html>
