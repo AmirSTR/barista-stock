@@ -79,7 +79,7 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
   };
 
   return (
-    <div className="sticky top-[108px] z-20 bg-slate-900/95 backdrop-blur-md border-b border-slate-800/60 py-2.5 shadow-sm">
+    <div className="sticky top-[108px] z-20 bg-tg-bg border-b border-tg-secondaryBg py-2.5">
       <div
         ref={scrollContainerRef}
         className="flex items-center gap-2 px-4 overflow-x-auto no-scrollbar scroll-smooth"
@@ -88,19 +88,19 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
         <button
           ref={activeCategory === null ? activeTabRef : null}
           onClick={() => handleTabClick(null)}
-          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${
+          className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 tap-active ${
             activeCategory === null
-              ? 'bg-brand-500 text-white shadow-md shadow-brand-500/25 scale-[1.02]'
-              : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/50'
+              ? 'bg-brand-500 text-white'
+              : 'bg-tg-secondaryBg text-tg-hint hover:bg-brand-50 hover:text-brand-600'
           }`}
         >
           <LayoutGrid className="w-3.5 h-3.5" />
           <span>Все</span>
           <span
-            className={`text-[10px] px-1.5 py-0.2 rounded-full ml-0.5 ${
+            className={`text-[10px] px-1.5 py-0.5 rounded-md ml-0.5 ${
               activeCategory === null
                 ? 'bg-white/20 text-white'
-                : 'bg-slate-700 text-slate-400'
+                : 'bg-brand-100 text-brand-600'
             }`}
           >
             {totalProductsCount}
@@ -115,19 +115,19 @@ export const CategoryTabs: React.FC<CategoryTabsProps> = ({
               key={cat.category}
               ref={isActive ? activeTabRef : null}
               onClick={() => handleTabClick(cat.category)}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 shrink-0 ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold whitespace-nowrap transition-colors duration-200 shrink-0 tap-active ${
                 isActive
-                  ? 'bg-brand-500 text-white shadow-md shadow-brand-500/25 scale-[1.02]'
-                  : 'bg-slate-800/80 text-slate-300 hover:bg-slate-800 hover:text-white border border-slate-700/50'
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-tg-secondaryBg text-tg-hint hover:bg-brand-50 hover:text-brand-600'
               }`}
             >
               {getCategoryIcon(cat.category)}
               <span>{cat.category}</span>
               <span
-                className={`text-[10px] px-1.5 py-0.2 rounded-full ml-0.5 ${
+                className={`text-[10px] px-1.5 py-0.5 rounded-md ml-0.5 ${
                   isActive
                     ? 'bg-white/20 text-white'
-                    : 'bg-slate-700 text-slate-400'
+                    : 'bg-brand-100 text-brand-600'
                 }`}
               >
                 {cat.items_count}

@@ -29,30 +29,30 @@ export const StockAlertModal: React.FC = () => {
   const outCount = out_of_stock_items.length;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
       <div
-        className="w-full max-w-md bg-slate-900 border border-amber-500/40 rounded-3xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
+        className="w-full max-w-md bg-tg-bg border border-tg-secondaryBg rounded-2xl shadow-xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
-        <div className="p-5 bg-gradient-to-b from-amber-500/15 to-transparent border-b border-slate-800 text-center shrink-0">
-          <div className="w-13 h-13 mx-auto mb-3 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center text-amber-400">
-            <AlertTriangle className="w-7 h-7" />
+        <div className="p-5 bg-tg-secondaryBg border-b border-tg-secondaryBg text-center shrink-0">
+          <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-amber-100 flex items-center justify-center text-amber-600">
+            <AlertTriangle className="w-6 h-6" />
           </div>
-          <h3 className="text-base font-extrabold text-white">
+          <h3 className="text-base font-bold text-tg-text">
             Изменение остатков на складе
           </h3>
-          <p className="text-xs text-slate-300 mt-1 max-w-xs mx-auto">
+          <p className="text-xs text-tg-hint mt-1 max-w-xs mx-auto">
             Заказ уже создан, а доступные позиции забронированы. Склад скорректировал его по фактическим остаткам:
           </p>
         </div>
 
         {/* Changes Breakdown List */}
-        <div className="p-5 overflow-y-auto space-y-3.5 no-scrollbar flex-1">
+        <div className="p-5 overflow-y-auto space-y-4 no-scrollbar flex-1">
           {/* 1. Out of stock items */}
           {outCount > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-rose-400">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-red-600">
                 <Ban className="w-4 h-4" />
                 <span>Ушли в стоп ({outCount})</span>
               </div>
@@ -60,20 +60,20 @@ export const StockAlertModal: React.FC = () => {
                 {out_of_stock_items.map((item) => (
                   <div
                     key={item.product_id}
-                    className="p-3 rounded-xl bg-rose-950/30 border border-rose-500/30 flex items-start justify-between gap-2"
+                    className="p-3 rounded-xl bg-red-50 border border-red-100 flex items-start justify-between gap-2"
                   >
                     <div>
-                      <div className="text-[10px] font-mono text-rose-300/80">
+                      <div className="text-[10px] font-mono text-red-500">
                         {item.sku}
                       </div>
-                      <div className="text-xs font-bold text-slate-100 line-clamp-1">
+                      <div className="text-xs font-bold text-red-700 line-clamp-1">
                         {item.name}
                       </div>
-                      <div className="text-[11px] text-rose-300/90 mt-0.5">
+                      <div className="text-[11px] text-red-600 mt-0.5">
                         {item.message || 'Товар закончился и исключен из заказа'}
                       </div>
                     </div>
-                    <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                    <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-red-100 text-red-600">
                       0 шт
                     </span>
                   </div>
@@ -85,7 +85,7 @@ export const StockAlertModal: React.FC = () => {
           {/* 2. Partial items */}
           {partialCount > 0 && (
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600">
                 <TrendingDown className="w-4 h-4" />
                 <span>Количество скорректировано ({partialCount})</span>
               </div>
@@ -93,20 +93,20 @@ export const StockAlertModal: React.FC = () => {
                 {partial_items.map((item) => (
                   <div
                     key={item.product_id}
-                    className="p-3 rounded-xl bg-amber-950/30 border border-amber-500/30 flex items-start justify-between gap-2"
+                    className="p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-start justify-between gap-2"
                   >
                     <div>
-                      <div className="text-[10px] font-mono text-amber-300/80">
+                      <div className="text-[10px] font-mono text-amber-600">
                         {item.sku}
                       </div>
-                      <div className="text-xs font-bold text-slate-100 line-clamp-1">
+                      <div className="text-xs font-bold text-amber-700 line-clamp-1">
                         {item.name}
                       </div>
-                      <div className="text-[11px] text-amber-300/90 mt-0.5">
-                        Было {item.requested_qty} → Забронировано: <b className="text-amber-200">{item.confirmed_qty}</b>
+                      <div className="text-[11px] text-amber-600 mt-0.5">
+                        Было {item.requested_qty} → Забронировано: <b className="text-amber-800">{item.confirmed_qty}</b>
                       </div>
                     </div>
-                    <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded bg-amber-100 text-amber-600">
                       {item.confirmed_qty} шт
                     </span>
                   </div>
@@ -117,12 +117,12 @@ export const StockAlertModal: React.FC = () => {
 
           {/* 3. Fully confirmed items preview summary */}
           {confirmedCount > 0 && (
-            <div className="p-3 rounded-xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-between text-xs text-slate-300">
+            <div className="p-3 rounded-xl bg-brand-50 border border-brand-100 flex items-center justify-between text-xs text-brand-700">
               <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                <CheckCircle2 className="w-4 h-4 text-brand-600" />
                 <span>Подтверждено позиций:</span>
               </div>
-              <span className="font-bold text-emerald-400">
+              <span className="font-bold text-brand-600">
                 {confirmedCount} поз.
               </span>
             </div>
@@ -130,10 +130,10 @@ export const StockAlertModal: React.FC = () => {
         </div>
 
         {/* Modal Actions */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 space-y-2 shrink-0">
+        <div className="p-4 bg-tg-bg border-t border-tg-secondaryBg space-y-2 shrink-0">
           <button
             onClick={handleAccept}
-            className="w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] text-white font-bold text-sm shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 transition-all"
+            className="w-full py-3.5 px-4 rounded-md bg-brand-500 hover:bg-brand-600 tap-active text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors"
           >
             <span>Понятно, заказ создан</span>
             <ArrowRight className="w-4 h-4" />

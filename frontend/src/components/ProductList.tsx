@@ -54,19 +54,19 @@ export const ProductList: React.FC<ProductListProps> = ({
   if (filteredGroups.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-        <div className="w-16 h-16 rounded-3xl bg-slate-800/80 border border-slate-700 flex items-center justify-center text-slate-400 mb-4 shadow-inner">
+        <div className="w-16 h-16 rounded-2xl bg-tg-secondaryBg flex items-center justify-center text-tg-hint mb-4">
           <SearchX className="w-8 h-8" />
         </div>
-        <h4 className="text-base font-bold text-slate-200 mb-1">
+        <h4 className="text-base font-bold text-tg-text mb-1">
           Ничего не найдено
         </h4>
-        <p className="text-xs text-slate-400 max-w-xs mb-5">
+        <p className="text-xs text-tg-hint max-w-xs mb-5">
           По запросу «{searchQuery}» в категории «{activeCategory || 'Все'}»
           товаров не обнаружено.
         </p>
         <button
           onClick={onClearSearch}
-          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 active:scale-95 transition-all"
+          className="px-4 py-2 rounded-md bg-tg-secondaryBg hover:bg-brand-50 text-tg-text text-xs font-semibold tap-active transition-colors"
         >
           Сбросить поиск
         </button>
@@ -78,16 +78,16 @@ export const ProductList: React.FC<ProductListProps> = ({
     <div className="px-4 py-4 space-y-6 pb-28">
       {/* If searching, display search summary */}
       {query && (
-        <div className="flex items-center justify-between text-xs text-slate-400 bg-slate-800/50 px-3 py-2 rounded-xl border border-slate-700/40">
+        <div className="flex items-center justify-between text-xs text-tg-hint bg-tg-secondaryBg px-3 py-2 rounded-md">
           <div className="flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-brand-400" />
+            <Sparkles className="w-3.5 h-3.5 text-brand-500" />
             <span>
-              Результаты поиска: <b className="text-white">{totalFoundProducts}</b> поз.
+              Результаты поиска: <b className="text-tg-text">{totalFoundProducts}</b> поз.
             </span>
           </div>
           <button
             onClick={onClearSearch}
-            className="text-brand-400 font-semibold hover:underline"
+            className="text-brand-600 font-semibold hover:underline"
           >
             Очистить
           </button>
@@ -99,11 +99,11 @@ export const ProductList: React.FC<ProductListProps> = ({
         <section key={group.category} className="space-y-3">
           {/* Section Category Header */}
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
-              <span className="w-1.5 h-4 bg-brand-500 rounded-full inline-block"></span>
+            <h2 className="text-sm font-bold uppercase tracking-wider text-tg-text flex items-center gap-2">
+              <span className="w-1.5 h-4 bg-brand-500 rounded-sm inline-block"></span>
               {group.category}
             </h2>
-            <span className="text-[11px] font-medium text-slate-400 px-2 py-0.5 rounded-full bg-slate-800/80 border border-slate-700/50">
+            <span className="text-[11px] font-medium text-tg-hint px-2 py-0.5 rounded-md bg-tg-secondaryBg">
               {group.items.length} {group.items.length === 1 ? 'позиция' : 'позиций'}
             </span>
           </div>

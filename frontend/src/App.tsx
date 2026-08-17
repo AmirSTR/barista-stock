@@ -55,14 +55,14 @@ const MainCatalogApp: React.FC = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-brand-500/10 border border-brand-500/20 flex items-center justify-center text-brand-400 mb-4 animate-pulse">
-          <Loader2 className="w-7 h-7 animate-spin" />
+      <div className="min-h-screen bg-tg-bg flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-14 h-14 rounded-xl bg-brand-100 flex items-center justify-center text-brand-600 mb-4 animate-spin">
+          <Loader2 className="w-7 h-7" />
         </div>
-        <h3 className="text-base font-bold text-slate-100">
+        <h3 className="text-base font-bold text-tg-text">
           Загрузка каталога склада...
         </h3>
-        <p className="text-xs text-slate-400 mt-1">
+        <p className="text-xs text-tg-hint mt-1">
           Синхронизация остатков с сервером сети
         </p>
       </div>
@@ -71,19 +71,19 @@ const MainCatalogApp: React.FC = () => {
 
   if (error || !catalogData) {
     return (
-      <div className="min-h-screen bg-slate-900 flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-14 h-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 mb-4">
+      <div className="min-h-screen bg-tg-bg flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-14 h-14 rounded-xl bg-red-50 flex items-center justify-center text-red-500 mb-4">
           <AlertCircle className="w-7 h-7" />
         </div>
-        <h3 className="text-base font-bold text-slate-100 mb-1">
+        <h3 className="text-base font-bold text-tg-text mb-1">
           Ошибка подключения
         </h3>
-        <p className="text-xs text-slate-400 max-w-xs mb-5">
+        <p className="text-xs text-tg-hint max-w-xs mb-5">
           {error || 'Не удалось получить актуальные данные склада'}
         </p>
         <button
           onClick={() => fetchCatalog()}
-          className="px-5 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold shadow-lg shadow-brand-600/30 flex items-center gap-2 active:scale-95 transition-all"
+          className="px-5 py-2.5 rounded-md bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center gap-2 transition-colors tap-active"
         >
           <RefreshCw className="w-4 h-4" />
           <span>Повторить попытку</span>
@@ -93,7 +93,7 @@ const MainCatalogApp: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col relative selection:bg-brand-500/30">
+    <div className="min-h-screen bg-tg-bg text-tg-text flex flex-col relative selection:bg-brand-100">
       {/* 1. Top Header with Bar Selector & Search */}
       <Header
         searchQuery={searchQuery}
@@ -138,12 +138,12 @@ const MainCatalogApp: React.FC = () => {
       <button
         onClick={handleRefresh}
         disabled={isRefreshing}
-        className={`fixed top-3.5 right-4 z-40 p-2 rounded-xl bg-slate-800/80 border border-slate-700/80 text-slate-400 hover:text-slate-200 active:scale-90 transition-all ${
-          isRefreshing ? 'animate-spin text-brand-400' : ''
+        className={`fixed top-3.5 right-4 z-40 p-2 rounded-md bg-tg-secondaryBg text-tg-hint hover:text-brand-500 transition-colors tap-active ${
+          isRefreshing ? 'animate-spin text-brand-500' : ''
         }`}
         title="Обновить остатки"
       >
-        <RefreshCw className="w-3.5 h-3.5" />
+        <RefreshCw className="w-4 h-4" />
       </button>
     </div>
   );

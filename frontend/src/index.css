@@ -4,36 +4,36 @@
 
 @layer base {
   :root {
-    --tg-theme-bg-color: #0f172a;
-    --tg-theme-secondary-bg-color: #1e293b;
-    --tg-theme-text-color: #f8fafc;
-    --tg-theme-hint-color: #94a3b8;
-    --tg-theme-link-color: #38bdf8;
-    --tg-theme-button-color: #0284c7;
-    --tg-theme-button-text-color: #ffffff;
-    --tg-theme-header-bg-color: #0f172a;
-    --tg-theme-accent-text-color: #38bdf8;
-    --tg-theme-section-bg-color: #1e293b;
-    --tg-theme-section-header-text-color: #64748b;
-    --tg-theme-subtitle-text-color: #94a3b8;
+    --tg-theme-bg-color: #fef7e5;
+    --tg-theme-secondary-bg-color: #f6eed6;
+    --tg-theme-text-color: #1f2937;
+    --tg-theme-hint-color: #606c38;
+    --tg-theme-link-color: #606c38;
+    --tg-theme-button-color: #606c38;
+    --tg-theme-button-text-color: #fef7e5;
+    --tg-theme-header-bg-color: #fef7e5;
+    --tg-theme-accent-text-color: #606c38;
+    --tg-theme-section-bg-color: #f6eed6;
+    --tg-theme-section-header-text-color: #606c38;
+    --tg-theme-subtitle-text-color: #606c38;
     --tg-theme-destructive-text-color: #ef4444;
   }
 
-  /* When Telegram provides light theme */
+  /* When Telegram provides light theme, keep it consistent with the brand */
   .tg-theme-light {
-    --tg-theme-bg-color: #ffffff;
-    --tg-theme-secondary-bg-color: #f1f5f9;
-    --tg-theme-text-color: #0f172a;
-    --tg-theme-hint-color: #64748b;
-    --tg-theme-link-color: #0284c7;
-    --tg-theme-button-color: #0284c7;
-    --tg-theme-button-text-color: #ffffff;
-    --tg-theme-header-bg-color: #ffffff;
-    --tg-theme-accent-text-color: #0284c7;
-    --tg-theme-section-bg-color: #f8fafc;
-    --tg-theme-section-header-text-color: #64748b;
-    --tg-theme-subtitle-text-color: #64748b;
-    --tg-theme-destructive-text-color: #dc2626;
+    --tg-theme-bg-color: #fef7e5;
+    --tg-theme-secondary-bg-color: #f6eed6;
+    --tg-theme-text-color: #1f2937;
+    --tg-theme-hint-color: #606c38;
+    --tg-theme-link-color: #606c38;
+    --tg-theme-button-color: #606c38;
+    --tg-theme-button-text-color: #fef7e5;
+    --tg-theme-header-bg-color: #fef7e5;
+    --tg-theme-accent-text-color: #606c38;
+    --tg-theme-section-bg-color: #f6eed6;
+    --tg-theme-section-header-text-color: #606c38;
+    --tg-theme-subtitle-text-color: #606c38;
+    --tg-theme-destructive-text-color: #ef4444;
   }
 
   body {
@@ -54,23 +54,19 @@
   }
 }
 
-/* Glassmorphism and touch utilities */
+/* Flat UI classes replacing glassmorphism */
 .glass-panel {
-  background: rgba(30, 41, 59, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--tg-theme-secondary-bg-color);
+  border: 1px solid rgba(96, 108, 56, 0.1);
 }
 
 .glass-panel-light {
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: var(--tg-theme-bg-color);
+  border: 1px solid rgba(96, 108, 56, 0.1);
 }
 
 .tap-active:active {
-  transform: scale(0.96);
+  transform: scale(0.98);
   transition: transform 0.1s ease;
 }
 

@@ -34,7 +34,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
   const getStockBadge = () => {
     if (isStop) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-bold bg-red-100 text-red-600">
           <Ban className="w-3 h-3" />
           В СТОПЕ
         </span>
@@ -43,7 +43,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
     if (product.available_qty <= 5) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-bold bg-amber-100 text-amber-600">
           <AlertCircle className="w-3 h-3" />
           Мало: {product.available_qty} {product.unit}
         </span>
@@ -51,7 +51,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     }
 
     return (
-      <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/25">
+      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-sm text-[10px] font-bold bg-brand-50 text-brand-600">
         <Check className="w-3 h-3" />
         Доступно: {product.available_qty} {product.unit}
       </span>
@@ -60,18 +60,18 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
   return (
     <div
-      className={`relative flex flex-col justify-between p-3.5 rounded-2xl border transition-all duration-200 ${
+      className={`relative flex flex-col justify-between p-3.5 rounded-xl transition-colors duration-200 ${
         isStop
-          ? 'bg-slate-900/40 border-slate-800/40 opacity-60 grayscale-[40%]'
+          ? 'bg-tg-bg opacity-60 grayscale-[40%] border border-tg-secondaryBg'
           : currentQuantity > 0
-          ? 'bg-slate-800/90 border-brand-500/50 shadow-md shadow-brand-500/10'
-          : 'bg-slate-800/70 border-slate-700/60 hover:border-slate-600/80 shadow-sm'
+          ? 'bg-tg-bg border-2 border-brand-500 shadow-[0_4px_12px_rgba(96,108,56,0.1)]'
+          : 'bg-tg-bg border border-tg-secondaryBg hover:border-brand-200'
       }`}
     >
       {/* Top Meta: SKU & Stock Badge */}
       <div>
         <div className="flex items-center justify-between gap-2 mb-1.5">
-          <span className="text-[10px] font-mono font-medium text-slate-400 tracking-wider">
+          <span className="text-[10px] font-mono font-medium text-tg-hint tracking-wider">
             {product.sku}
           </span>
           {getStockBadge()}
@@ -80,7 +80,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         {/* Product Title */}
         <h3
           className={`text-sm font-semibold leading-snug line-clamp-2 mb-1 ${
-            isStop ? 'text-slate-400 line-through decoration-rose-500/50' : 'text-slate-100'
+            isStop ? 'text-tg-hint line-through decoration-red-400' : 'text-tg-text'
           }`}
           title={product.name}
         >
@@ -88,22 +88,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         </h3>
 
         {/* Unit & Category */}
-        <div className="flex items-center gap-2 text-xs text-slate-400 mb-3">
-          <span className="px-2 py-0.5 rounded bg-slate-900/60 border border-slate-700/40 text-[11px] font-medium text-slate-300">
+        <div className="flex items-center gap-2 text-xs text-tg-hint mb-3">
+          <span className="px-2 py-0.5 rounded-md bg-tg-secondaryBg text-[11px] font-medium text-tg-text">
             {product.unit}
           </span>
-          <span className="text-[11px] text-slate-400 truncate">
+          <span className="text-[11px] truncate">
             {product.category}
           </span>
         </div>
       </div>
 
       {/* Action / Stepper Controls */}
-      <div className="mt-2 pt-2 border-t border-slate-700/40 flex items-center justify-between gap-2">
+      <div className="mt-2 pt-3 border-t border-tg-secondaryBg flex items-center justify-between gap-2">
         {isStop ? (
           <button
             disabled
-            className="w-full py-2 px-3 rounded-xl bg-slate-800/60 text-slate-500 text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed border border-slate-800"
+            className="w-full py-2 px-3 rounded-md bg-tg-secondaryBg text-tg-hint text-xs font-semibold flex items-center justify-center gap-1.5 cursor-not-allowed"
           >
             <Ban className="w-3.5 h-3.5" />
             Недоступно
@@ -111,27 +111,27 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         ) : currentQuantity === 0 ? (
           <button
             onClick={handleAdd}
-            className="w-full py-2 px-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm shadow-brand-600/30"
+            className="w-full py-2 px-3 rounded-md bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 tap-active transition-colors"
           >
             <Plus className="w-4 h-4" />
             В заказ
           </button>
         ) : (
-          <div className="flex items-center justify-between w-full bg-slate-900/80 rounded-xl p-1 border border-brand-500/40">
+          <div className="flex items-center justify-between w-full bg-brand-50 rounded-md p-1 border border-brand-200">
             {/* Decrement Button */}
             <button
               onClick={handleDecrement}
-              className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 active:scale-90 flex items-center justify-center text-slate-200 hover:text-white transition-all"
+              className="w-8 h-8 rounded text-brand-600 hover:bg-brand-100 flex items-center justify-center transition-colors tap-active"
             >
               <Minus className="w-4 h-4" />
             </button>
 
             {/* Current Qty & Max cue */}
             <div className="flex flex-col items-center px-2">
-              <span className="text-sm font-bold text-white leading-tight">
+              <span className="text-sm font-bold text-brand-700 leading-tight">
                 {currentQuantity}
               </span>
-              <span className="text-[9px] font-medium text-slate-400 leading-none">
+              <span className="text-[9px] font-medium text-brand-500 leading-none">
                 из {product.available_qty}
               </span>
             </div>
@@ -140,10 +140,10 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <button
               onClick={handleAdd}
               disabled={isLimitReached}
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${
+              className={`w-8 h-8 rounded flex items-center justify-center transition-colors ${
                 isLimitReached
-                  ? 'bg-slate-800/40 text-slate-600 cursor-not-allowed'
-                  : 'bg-brand-600 hover:bg-brand-500 active:scale-90 text-white'
+                  ? 'text-brand-300 cursor-not-allowed'
+                  : 'bg-brand-500 text-white hover:bg-brand-600 tap-active'
               }`}
             >
               <Plus className="w-4 h-4" />
@@ -154,7 +154,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
       {/* Limit Reached Warning Label */}
       {isLimitReached && currentQuantity > 0 && (
-        <div className="text-[10px] text-amber-400 font-medium text-center mt-1">
+        <div className="text-[10px] text-amber-600 font-medium text-center mt-1.5">
           Максимум на складе
         </div>
       )}

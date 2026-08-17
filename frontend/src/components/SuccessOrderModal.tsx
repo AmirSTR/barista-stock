@@ -47,29 +47,29 @@ export const SuccessOrderModal: React.FC = () => {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-fade-in">
       <div
-        className="w-full max-w-md bg-slate-900 border border-slate-700/80 rounded-3xl shadow-2xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
+        className="w-full max-w-md bg-tg-bg border border-tg-secondaryBg rounded-2xl shadow-xl overflow-hidden animate-slide-up flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Celebration Header */}
-        <div className="p-6 bg-gradient-to-b from-emerald-500/20 via-emerald-500/5 to-transparent border-b border-slate-800 text-center shrink-0">
+        <div className="p-6 bg-tg-secondaryBg border-b border-tg-secondaryBg text-center shrink-0">
           <div className="relative inline-block mb-3">
-            <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/20">
-              <CheckCircle className="w-9 h-9 animate-bounce-subtle" />
+            <div className="w-16 h-16 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 shadow-sm">
+              <CheckCircle className="w-8 h-8" />
             </div>
-            <Sparkles className="w-5 h-5 text-amber-400 absolute -top-1 -right-1 animate-pulse" />
+            <Sparkles className="w-5 h-5 text-amber-500 absolute -top-1 -right-1" />
           </div>
 
-          <span className="inline-block px-3 py-1 rounded-full text-[11px] font-extrabold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mb-1.5">
+          <span className="inline-block px-3 py-1 rounded-sm text-[11px] font-bold uppercase tracking-wider bg-brand-50 text-brand-700 border border-brand-100 mb-1.5">
             Заказ успешно оформлен
           </span>
 
-          <h2 className="text-2xl font-extrabold text-white">
+          <h2 className="text-2xl font-bold text-tg-text">
             Заказ #{lastConfirmedOrder.id || lastConfirmedOrder.order_id}
           </h2>
 
-          <p className="text-xs text-slate-300 mt-1">
+          <p className="text-xs text-tg-hint mt-1">
             Заявка передана на центральный склад и ожидает сборки
           </p>
         </div>
@@ -78,22 +78,22 @@ export const SuccessOrderModal: React.FC = () => {
         <div className="p-5 overflow-y-auto space-y-4 no-scrollbar flex-1">
           {/* Metadata Cards */}
           <div className="grid grid-cols-2 gap-2.5">
-            <div className="p-3 rounded-2xl bg-slate-800/60 border border-slate-700/50">
-              <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400 mb-1">
-                <Store className="w-3.5 h-3.5 text-brand-400" />
+            <div className="p-3 rounded-xl bg-tg-secondaryBg border border-transparent">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-tg-hint mb-1">
+                <Store className="w-3.5 h-3.5 text-brand-500" />
                 <span>Точка (Бар)</span>
               </div>
-              <div className="text-xs font-bold text-slate-100 truncate">
+              <div className="text-xs font-bold text-tg-text truncate">
                 {selectedBar.name}
               </div>
             </div>
 
-            <div className="p-3 rounded-2xl bg-slate-800/60 border border-slate-700/50">
-              <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-slate-400 mb-1">
-                <Clock className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="p-3 rounded-xl bg-tg-secondaryBg border border-transparent">
+              <div className="flex items-center gap-1.5 text-[10px] uppercase font-bold text-tg-hint mb-1">
+                <Clock className="w-3.5 h-3.5 text-brand-500" />
                 <span>Статус</span>
               </div>
-              <div className="text-xs font-bold text-emerald-400 capitalize">
+              <div className="text-xs font-bold text-brand-600 capitalize">
                 В обработке
               </div>
             </div>
@@ -101,12 +101,12 @@ export const SuccessOrderModal: React.FC = () => {
 
           {/* Confirmed Items List */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-300 px-1">
+            <div className="flex items-center justify-between text-xs font-bold text-tg-text px-1">
               <div className="flex items-center gap-1.5">
-                <PackageCheck className="w-4 h-4 text-brand-400" />
+                <PackageCheck className="w-4 h-4 text-brand-500" />
                 <span>Забронированные позиции ({lastConfirmedOrder.items.length})</span>
               </div>
-              <span className="text-slate-400 font-medium text-[11px]">
+              <span className="text-tg-hint font-medium text-[11px]">
                 Всего: {totalConfirmedUnits} ед.
               </span>
             </div>
@@ -115,23 +115,23 @@ export const SuccessOrderModal: React.FC = () => {
               {lastConfirmedOrder.items.map((item) => (
                 <div
                   key={item.id || item.product_id}
-                  className="p-2.5 rounded-xl bg-slate-800/70 border border-slate-700/50 flex items-center justify-between gap-2"
+                  className="p-2.5 rounded-xl bg-tg-bg border border-tg-secondaryBg flex items-center justify-between gap-2"
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-[9px] font-mono text-slate-400 bg-slate-900/60 px-1.5 py-0.5 rounded">
+                      <span className="text-[9px] font-mono text-tg-hint bg-tg-secondaryBg px-1.5 py-0.5 rounded-sm">
                         {item.sku}
                       </span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-tg-hint">
                         {item.unit}
                       </span>
                     </div>
-                    <div className="text-xs font-semibold text-slate-200 truncate mt-0.5">
+                    <div className="text-xs font-semibold text-tg-text truncate mt-0.5">
                       {item.name}
                     </div>
                   </div>
                   <div className="text-right shrink-0">
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">
+                    <span className="text-xs font-bold text-brand-700 bg-brand-50 px-2 py-1 rounded-md">
                       {item.confirmed_qty} {item.unit}
                     </span>
                   </div>
@@ -140,17 +140,17 @@ export const SuccessOrderModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400">
-            <Calendar className="w-3.5 h-3.5 text-slate-500" />
+          <div className="flex items-center justify-center gap-1.5 text-[11px] text-tg-hint">
+            <Calendar className="w-3.5 h-3.5" />
             <span>Оформлено: {formattedDate}</span>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
+        <div className="p-4 bg-tg-bg border-t border-tg-secondaryBg shrink-0">
           <button
             onClick={handleClose}
-            className="w-full py-3.5 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 active:scale-[0.98] text-white font-bold text-sm shadow-xl shadow-brand-600/30 flex items-center justify-center gap-2 transition-all"
+            className="w-full py-3.5 px-4 rounded-md bg-brand-500 hover:bg-brand-600 tap-active text-white font-bold text-sm flex items-center justify-center gap-2 transition-colors"
           >
             <span>Сделать новый заказ</span>
             <ArrowRight className="w-4 h-4" />
