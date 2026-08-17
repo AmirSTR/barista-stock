@@ -81,7 +81,7 @@ trap 'cleanup; exit 0' SIGTERM SIGINT
 PORT="${PORT:-8000}"
 WEB_CONCURRENCY="${WEB_CONCURRENCY:-1}"
 echo "🌐 Starting FastAPI HTTP server on port $PORT..."
-uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --workers "$WEB_CONCURRENCY" &
+uvicorn app.main:app --host 0.0.0.0 --port "$PORT" --workers "$WEB_CONCURRENCY" --proxy-headers --forwarded-allow-ips="*" &
 UVICORN_PID=$!
 
 # 7. Start Telegram Bot Runner (if token is configured)
