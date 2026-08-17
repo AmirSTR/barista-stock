@@ -24,6 +24,18 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# SQLAdmin integration
+from sqladmin import Admin
+from app.admin import ProductAdmin, BarAdmin, StockAdmin, OrderAdmin, OrderItemAdmin, SupplyInvoiceAdmin, SupplyItemAdmin
+admin = Admin(app, engine, title="Barista Stock Admin")
+admin.add_view(ProductAdmin)
+admin.add_view(BarAdmin)
+admin.add_view(StockAdmin)
+admin.add_view(OrderAdmin)
+admin.add_view(OrderItemAdmin)
+admin.add_view(SupplyInvoiceAdmin)
+admin.add_view(SupplyItemAdmin)
+
 # CORS configuration
 app.add_middleware(
     CORSMiddleware,
