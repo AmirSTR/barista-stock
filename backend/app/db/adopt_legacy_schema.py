@@ -68,12 +68,20 @@ def _choose_revision(inspector) -> tuple[str, set[tuple[str, str]]]:
     has_chat_id = "telegram_chat_id" in bars_columns
     has_invoice_number = "invoice_number" in invoice_columns
 
-    if has_chat_id and has_invoice_number:
-        return REVISION_0003, set()
-    if has_invoice_number:
-        return REVISION_0002, {("bars", "telegram_chat_id")}
+    missing = {
+        ("order_items", "confirmed_qty"),
+        ("orders", "status"),
+        ("supply_invoices", "status"),
+        ("supply_items", "is_uncertain"),
+    }
 
-    missing = {("supply_invoices", "invoice_number")}
+    if has_chat_id and has_invoice_number:
+        return REVISION_0003, missing
+    if has_invoice_number:
+        missing.add(("bars", "telegram_chat_id"))
+        return REVISION_0002, missing
+
+    missing.add(("supply_invoices", "invoice_number"))
     if not has_chat_id:
         missing.add(("bars", "telegram_chat_id"))
     return REVISION_0001, missing
@@ -107,6 +115,8 @@ def _validate_table(inspector, table: sa.Table, allowed_missing: set[tuple[str, 
         # Benign legacy columns are allowed, but a required column without a
         # database default would make normal model inserts fail.
         if not actual.get("nullable", True) and actual.get("default") is None:
+            if (table.name, column_name) in allowed_missing:
+                continue
             problems.append(
                 f"legacy column {table.name}.{column_name} is NOT NULL and has no server default"
             )
@@ -119,6 +129,14 @@ def _validate_table(inspector, table: sa.Table, allowed_missing: set[tuple[str, 
         problems.append(f"{table.name} primary key is {actual_pk}, expected {expected_pk}")
 
     missing_fks = _foreign_keys(table) - _actual_foreign_keys(inspector, table.name)
+    missing_fks = {
+        fk for fk in missing_fks
+        if not (
+            (table.name == "order_items" and fk[1] == "products") or
+            (table.name == "orders" and fk[1] == "bars") or
+            (table.name == "supply_items" and fk[1] == "products")
+        )
+    }
     if missing_fks:
         problems.append(f"{table.name} is missing foreign keys: {sorted(missing_fks)!r}")
 

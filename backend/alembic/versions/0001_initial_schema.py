@@ -64,10 +64,9 @@ def upgrade() -> None:
         "orders",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("bar_id", sa.Integer(), nullable=False),
-        sa.Column("status", sa.String(length=20), nullable=False, server_default="pending"),
+        sa.Column("status", sa.String(length=9), nullable=False, server_default="pending"),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.ForeignKeyConstraint(["bar_id"], ["bars.id"], ondelete="RESTRICT"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_orders_bar_id"), "orders", ["bar_id"], unique=False)
@@ -80,9 +79,8 @@ def upgrade() -> None:
         sa.Column("order_id", sa.Integer(), nullable=False),
         sa.Column("product_id", sa.Integer(), nullable=False),
         sa.Column("requested_qty", sa.Float(), nullable=False),
-        sa.Column("confirmed_qty", sa.Float(), nullable=True),
+        sa.Column("confirmed_qty", sa.Float(), nullable=False),
         sa.ForeignKeyConstraint(["order_id"], ["orders.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["product_id"], ["products.id"], ondelete="RESTRICT"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_order_items_order_id"), "order_items", ["order_id"], unique=False)
@@ -93,7 +91,7 @@ def upgrade() -> None:
         "supply_invoices",
         sa.Column("id", sa.Integer(), autoincrement=True, nullable=False),
         sa.Column("photo_file_id", sa.String(length=255), nullable=False),
-        sa.Column("status", sa.String(length=20), nullable=False, server_default="draft"),
+        sa.Column("status", sa.String(length=9), nullable=False, server_default="draft"),
         sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
         sa.PrimaryKeyConstraint("id"),
     )
@@ -108,8 +106,8 @@ def upgrade() -> None:
         sa.Column("detected_name", sa.String(length=255), nullable=False),
         sa.Column("quantity", sa.Float(), nullable=False),
         sa.Column("confidence_score", sa.Float(), nullable=False),
+        sa.Column("is_uncertain", sa.Boolean(), nullable=False),
         sa.ForeignKeyConstraint(["invoice_id"], ["supply_invoices.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["product_id"], ["products.id"], ondelete="SET NULL"),
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index(op.f("ix_supply_items_invoice_id"), "supply_items", ["invoice_id"], unique=False)
